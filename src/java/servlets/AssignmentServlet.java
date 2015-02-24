@@ -74,8 +74,8 @@ public class AssignmentServlet extends HttpServlet {
                 out.println(getResults("SELECT * FROM product"));
             } else {
 
-                int id = Integer.parseInt(request.getParameter("productId"));
-                out.println(getResults("SELECT * FROM product WHERE productId = ?", String.valueOf(id)));
+                int id = Integer.parseInt(request.getParameter("productid"));
+                out.println(getResults("SELECT * FROM product WHERE productid = ?", String.valueOf(id)));
             }
         } catch (IOException ex) {
             Logger.getLogger(AssignmentServlet.class.getName()).log(Level.SEVERE, null, ex);
@@ -100,7 +100,7 @@ public class AssignmentServlet extends HttpServlet {
                 doUpdate("INSERT INTO product (name, description, quantity) VALUES (?, ?, ?)", name, description, quantity);
             } else {
                 // There are no parameters at all
-                out.println("Error: Not enough data to input. Please use a URL of the form /servlet?name=XXX&age=XXX");
+                out.println("Error: Not enough data to input. Please use a URL of the form /servlet?name=XXX&description=XXX&quantity=XXX");
             }
         } catch (IOException ex) {
             Logger.getLogger(AssignmentServlet.class.getName()).log(Level.SEVERE, null, ex);
@@ -157,13 +157,34 @@ public class AssignmentServlet extends HttpServlet {
   protected void doDelete(HttpServletRequest request, HttpServletResponse response) {
         Set<String> keySet = request.getParameterMap().keySet();
         try (PrintWriter out = response.getWriter()) {
-            if (keySet.contains("productId")) {
+            if (keySet.contains("productid")) {
 
-                 int id = Integer.parseInt(request.getParameter("productId"));
+                 int id = Integer.parseInt(request.getParameter("productid"));
                 doUpdate("DELETE FROM product WHERE productId = ?", String.valueOf(id));
             } else {
                 // There are no parameters at all
                 out.println("Error: Not enough data to delete. Please use a URL of the form /servlet?productId=XXX");
+            }
+        } catch (IOException ex) {
+            Logger.getLogger(AssignmentServlet.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+  
+    @Override
+    protected void doPut(HttpServletRequest request, HttpServletResponse response) {
+         Set<String> keySet = request.getParameterMap().keySet();
+        try (PrintWriter out = response.getWriter()) {
+            if (keySet.contains("productid") && keySet.contains("name") && keySet.contains("description") && keySet.contains("quantity")) {
+
+                int id = Integer.parseInt(request.getParameter("productid"));
+                String name = request.getParameter("name");
+                String description = request.getParameter("description");
+                int quantity = Integer.parseInt(request.getParameter("quantity"));
+                
+                doUpdate("UPDATE product SET name = ?, description =?, quantity = ? WHERE productId = ?", name, description, String.valueOf(quantity), String.valueOf(id));
+            } else {
+                // There are no parameters at all
+                out.println("Error: Not enough data to update. Please use a URL of the form /servlet?productid=XXX&name=XXX&description=XXX&quantity=XXX");
             }
         } catch (IOException ex) {
             Logger.getLogger(AssignmentServlet.class.getName()).log(Level.SEVERE, null, ex);
