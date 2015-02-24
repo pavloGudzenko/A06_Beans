@@ -19,8 +19,8 @@ public class Credentials {
         Connection conn = null;
         try {
             Class.forName("com.mysql.jdbc.Driver");
-            String jdbc = "jdbc:mysql://localhost/Inventory";
-            String user = "localhost";
+            String jdbc = "jdbc:mysql://localhost/inventory";
+            String user = "root";
             String pass = "";
             conn = DriverManager.getConnection(jdbc, user, pass);
         } catch (ClassNotFoundException | SQLException ex) {

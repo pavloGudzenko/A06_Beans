@@ -3,12 +3,12 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package servlets;
 
 import credentials.Credentials;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -21,12 +21,13 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import org.json.simple.JSONObject;
 
 /**
  *
  * @author c0650853
  */
-@WebServlet("/servlet")
+@WebServlet("/product")
 public class AssignmentServlet extends HttpServlet {
 
     /**
@@ -38,22 +39,22 @@ public class AssignmentServlet extends HttpServlet {
      * @throws ServletException if a servlet-specific error occurs
      * @throws IOException if an I/O error occurs
      */
-//    protected void processRequest(HttpServletRequest request, HttpServletResponse response)
-//            throws ServletException, IOException {
-//        response.setContentType("text/html;charset=UTF-8");
-//        try (PrintWriter out = response.getWriter()) {
-//            /* TODO output your page here. You may use following sample code. */
-//            out.println("<!DOCTYPE html>");
-//            out.println("<html>");
-//            out.println("<head>");
-//            out.println("<title>Servlet AssignmentServlet</title>");            
-//            out.println("</head>");
-//            out.println("<body>");
-//            out.println("<h1>Servlet AssignmentServlet at " + request.getContextPath() + "</h1>");
-//            out.println("</body>");
-//            out.println("</html>");
-//        }
-//    }
+    protected void processRequest(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        response.setContentType("text/html;charset=UTF-8");
+        try (PrintWriter out = response.getWriter()) {
+            /* TODO output your page here. You may use following sample code. */
+            out.println("<!DOCTYPE html>");
+            out.println("<html>");
+            out.println("<head>");
+            out.println("<title>Servlet AssignmentServlet</title>");
+            out.println("</head>");
+            out.println("<body>");
+            out.println("<h1>Servlet AssignmentServlet at " + request.getContextPath() + "</h1>");
+            out.println("</body>");
+            out.println("</html>");
+        }
+    }
 
     // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
     /**
@@ -64,7 +65,7 @@ public class AssignmentServlet extends HttpServlet {
      * @throws ServletException if a servlet-specific error occurs
      * @throws IOException if an I/O error occurs
      */
-  @Override
+    @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) {
         response.setHeader("Content-Type", "text/plain-text");
         try (PrintWriter out = response.getWriter()) {
@@ -72,7 +73,7 @@ public class AssignmentServlet extends HttpServlet {
                 // There are no parameters at all
                 out.println(getResults("SELECT * FROM product"));
             } else {
-                // There are some parameters
+
                 int id = Integer.parseInt(request.getParameter("productId"));
                 out.println(getResults("SELECT * FROM product WHERE productId = ?", String.valueOf(id)));
             }
@@ -92,11 +93,11 @@ public class AssignmentServlet extends HttpServlet {
         Set<String> keySet = request.getParameterMap().keySet();
         try (PrintWriter out = response.getWriter()) {
             if (keySet.contains("name") && keySet.contains("description") && keySet.contains("quantity")) {
-                // There are some parameters                
+
                 String name = request.getParameter("name");
                 String description = request.getParameter("description");
                 String quantity = request.getParameter("quantity");
-                doUpdate("INSERT INTO sample (name, description, quantity) VALUES (?, ?, ?)", name, description, quantity);
+                doUpdate("INSERT INTO product (name, description, quantity) VALUES (?, ?, ?)", name, description, quantity);
             } else {
                 // There are no parameters at all
                 out.println("Error: Not enough data to input. Please use a URL of the form /servlet?name=XXX&age=XXX");
@@ -106,7 +107,7 @@ public class AssignmentServlet extends HttpServlet {
         }
     }
 
-    private String getResults(String query, String... params) {
+    private String getResults(String query, String... params) throws IOException {
         StringBuilder sb = new StringBuilder();
         try (Connection conn = Credentials.getConnection()) {
             PreparedStatement pstmt = conn.prepareStatement(query);
@@ -114,9 +115,24 @@ public class AssignmentServlet extends HttpServlet {
                 pstmt.setString(i, params[i - 1]);
             }
             ResultSet rs = pstmt.executeQuery();
+            sb.append("[");
             while (rs.next()) {
-                sb.append(String.format("%s\t%s\t%s\t%s\n", rs.getInt("productId"), rs.getString("name"), rs.getString("description"), rs.getInt("quantity")));
+
+                JSONObject JSON = new JSONObject();
+                JSON.put("id", rs.getInt("productId"));
+                JSON.put("name", rs.getString("name"));
+                JSON.put("description", rs.getString("description"));
+                JSON.put("quantity", rs.getInt("quantity"));
+                StringWriter output = new StringWriter();
+                JSON.writeJSONString(output);
+
+                String result = output.toString();
+
+                sb.append(result); 
+                sb.append("\n");
+                
             }
+            sb.append("]");
         } catch (SQLException ex) {
             Logger.getLogger(AssignmentServlet.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -135,5 +151,22 @@ public class AssignmentServlet extends HttpServlet {
             Logger.getLogger(AssignmentServlet.class.getName()).log(Level.SEVERE, null, ex);
         }
         return numChanges;
+    }
+    
+    @Override
+  protected void doDelete(HttpServletRequest request, HttpServletResponse response) {
+        Set<String> keySet = request.getParameterMap().keySet();
+        try (PrintWriter out = response.getWriter()) {
+            if (keySet.contains("productId")) {
+
+                 int id = Integer.parseInt(request.getParameter("productId"));
+                doUpdate("DELETE FROM product WHERE productId = ?", String.valueOf(id));
+            } else {
+                // There are no parameters at all
+                out.println("Error: Not enough data to delete. Please use a URL of the form /servlet?productId=XXX");
+            }
+        } catch (IOException ex) {
+            Logger.getLogger(AssignmentServlet.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 }
