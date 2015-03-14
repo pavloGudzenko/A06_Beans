@@ -28,6 +28,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -54,33 +55,11 @@ public class AssignmentServlet {
     @GET
     @Path("{id}")
     @Produces({"application/json"})
-    public Response find(@PathParam("id") int id) throws IOException {
+    public Response find(@PathParam("id") Integer id) throws IOException {
         return Response.ok(getResults("SELECT * FROM product WHERE productid = ?", String.valueOf(id))).build();
     }
-    
-    @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response) {
-        response.setHeader("Content-Type", "text/plain-text");
-        try (PrintWriter out = response.getWriter()) {
-            if (!request.getParameterNames().hasMoreElements()) {
-                // There are no parameters at all
-                out.println(getResults("SELECT * FROM product"));
-            } else {
 
-                int id = Integer.parseInt(request.getParameter("productid"));
-                out.println(getResults("SELECT * FROM product WHERE productid = ?", String.valueOf(id)));
-            }
-        } catch (IOException ex) {
-            Logger.getLogger(AssignmentServlet.class.getName()).log(Level.SEVERE, null, ex);
-        }
-    }
 
-    /**
-     * Provides POST /servlet?name=XXX&age=XXX
-     *
-     * @param request - the request object
-     * @param response - the response object
-     */
     @POST
     @Consumes({"application/json"})
     @Produces({"application/json"})
@@ -139,22 +118,25 @@ public class AssignmentServlet {
         return numChanges;
     }
     
-    @Override
-  protected void doDelete(HttpServletRequest request, HttpServletResponse response) {
-        Set<String> keySet = request.getParameterMap().keySet();
-        try (PrintWriter out = response.getWriter()) {
-            if (keySet.contains("productid")) {
-
-                 int id = Integer.parseInt(request.getParameter("productid"));
-                doUpdate("DELETE FROM product WHERE productId = ?", String.valueOf(id));
-            } else {
-                // There are no parameters at all
-                out.println("Error: Not enough data to delete. Please use a URL of the form /servlet?productId=XXX");
-            }
-        } catch (IOException ex) {
-            Logger.getLogger(AssignmentServlet.class.getName()).log(Level.SEVERE, null, ex);
+    
+    @DELETE
+    @Path("{id}")
+    public Response remove(@PathParam("id") Integer id) {
+        Response deleteResponse = null;
+        int rowsDeleted = 0;
+        
+        rowsDeleted = doUpdate("DELETE FROM product WHERE productId = ?", String.valueOf(id));
+        
+        if (rowsDeleted == 0){
+           deleteResponse = Response.status(500).build();
+        } else {
+           deleteResponse = Response.noContent().build();
         }
+       return deleteResponse; 
     }
+    
+
+    
   
     @Override
     protected void doPut(HttpServletRequest request, HttpServletResponse response) {
