@@ -31,6 +31,7 @@ import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -136,26 +137,24 @@ public class AssignmentServlet {
     }
     
 
-    
-  
-    @Override
-    protected void doPut(HttpServletRequest request, HttpServletResponse response) {
-         Set<String> keySet = request.getParameterMap().keySet();
-        try (PrintWriter out = response.getWriter()) {
-            if (keySet.contains("productid") && keySet.contains("name") && keySet.contains("description") && keySet.contains("quantity")) {
-
-                int id = Integer.parseInt(request.getParameter("productid"));
-                String name = request.getParameter("name");
-                String description = request.getParameter("description");
-                int quantity = Integer.parseInt(request.getParameter("quantity"));
-                
-                doUpdate("UPDATE product SET name = ?, description =?, quantity = ? WHERE productId = ?", name, description, String.valueOf(quantity), String.valueOf(id));
-            } else {
-                // There are no parameters at all
-                out.println("Error: Not enough data to update. Please use a URL of the form /servlet?productid=XXX&name=XXX&description=XXX&quantity=XXX");
-            }
-        } catch (IOException ex) {
-            Logger.getLogger(AssignmentServlet.class.getName()).log(Level.SEVERE, null, ex);
-        }
+    @PUT
+    @Path("{id}")
+    @Consumes({"application/json"})
+    @Produces({"application/json"})
+    public Response edit(@PathParam("id") Integer id, JsonObject json) {
+       int rowsUpdated = 0;
+       Response response = null;
+            String name = json.getString("name");
+                String description = json.getString("description");
+                String quantity = json.getString("quantity");
+         rowsUpdated = doUpdate("UPDATE product SET name = ?, description =?, quantity = ? WHERE productId = ?", 
+                                                 name, description, String.valueOf(quantity), String.valueOf(id));
+           if (rowsUpdated == 0){
+            response = Response.status(500).build();
+           } else {
+            response = Response.ok(json).build();
+           }
+           return response; 
     }
+       
 }
