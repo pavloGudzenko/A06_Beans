@@ -14,6 +14,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -27,7 +28,10 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.GET;
 import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Response;
 import org.json.simple.JSONObject;
@@ -38,18 +42,22 @@ import org.json.simple.JSONObject;
  * @author c0650853
  */
 @WebServlet("/product")
-public class AssignmentServlet extends HttpServlet {
+public class AssignmentServlet {
 
-
-    // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
-    /**
-     * Handles the HTTP <code>GET</code> method.
-     *
-     * @param request servlet request
-     * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
-     */
+    @GET
+    @Produces({"application/json"})
+    public Response findAll() throws IOException {
+        return Response.ok(getResults("SELECT * FROM products")).build();
+    }
+    
+    
+    @GET
+    @Path("{id}")
+    @Produces({"application/json"})
+    public Response find(@PathParam("id") int id) throws IOException {
+        return Response.ok(getResults("SELECT * FROM product WHERE productid = ?", String.valueOf(id))).build();
+    }
+    
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) {
         response.setHeader("Content-Type", "text/plain-text");
