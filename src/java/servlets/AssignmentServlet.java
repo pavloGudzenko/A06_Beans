@@ -56,7 +56,7 @@ public class AssignmentServlet {
     
     protected Response doPost(JsonObject json) {
           int rowsInserted = 0;
-          Response response = null;
+          Response response;
                 String name = json.getString("name");
                 String description = json.getString("description");
                 String quantity = json.getString("quantity");
@@ -136,7 +136,7 @@ public class AssignmentServlet {
     public Response edit(@PathParam("id") String id, JsonObject json) {
        int rowsUpdated = 0;
        Response response = null;
-            String name = json.getString("name");
+                String name = json.getString("name");
                 String description = json.getString("description");
                 String quantity = json.getString("quantity");
          rowsUpdated = doUpdate("UPDATE product SET name = ?, description =?, quantity = ? WHERE productId = ?", 
