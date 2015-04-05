@@ -53,16 +53,50 @@ public class ProductListBean {
         
     }
    
-public void add(Product product){  
-    productList.add(product);
+public void add(Product product){ 
+      int rowsInserted = 0;
+      
+      rowsInserted = doUpdate("INSERT INTO product (productid, name, description, quantity) VALUES (?, ?, ?, ?)", 
+              Integer.toString(product.getProductId()), 
+              product.getProductName(), 
+              product.getDescription(), 
+              Integer.toString(product.getQty()));
+      
+           if (rowsInserted == 0){
+               System.out.println("No rows were inserted");
+           } else {
+               productList.add(product);
+           }
 }   
 
-public void remove(Product product){  
-    productList.remove(product);
+
+public void remove(Product product){ 
+    int rowsDeleted = 0;
+      
+      rowsDeleted = doUpdate("DELETE FROM product WHERE productid = ? AND name = ? AND description = ? AND quantity = ?", 
+                             Integer.toString(product.getProductId()),
+                             product.getProductName(),
+                             product.getDescription(),
+                             Integer.toString(product.getQty()));
+      
+      if (rowsDeleted == 0){
+               System.out.println("No rows were Deleted");
+           } else {
+               productList.remove(product);
+           }
 }
 
 public void remove(int id){  
-    productList.remove(id);
+        int rowsDeleted = 0;
+      
+      rowsDeleted = doUpdate("DELETE FROM product WHERE productid = ?", 
+                             Integer.toString(productList.get(id).getProductId()));
+      
+      if (rowsDeleted == 0){
+               System.out.println("No rows were Deleted");
+           } else {
+               productList.remove(id);
+           }  
 }
 
 public void set(int id, Product product){
@@ -88,6 +122,21 @@ public JsonArray toJSON(){
             
         return jsonArray.build();
 }
+
+
+    private int doUpdate(String query, String... params) {
+        int numChanges = 0;
+        try (Connection conn = Credentials.getConnection()) {
+            PreparedStatement pstmt = conn.prepareStatement(query);
+            for (int i = 1; i <= params.length; i++) {
+                pstmt.setString(i, params[i - 1]);
+            }
+            numChanges = pstmt.executeUpdate();
+        } catch (SQLException ex) {
+            Logger.getLogger(ProductListBean.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return numChanges;
+    }
 
 
 
