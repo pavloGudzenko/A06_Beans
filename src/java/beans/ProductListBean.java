@@ -6,7 +6,14 @@
 
 package beans;
 
+import credentials.Credentials;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.ejb.Singleton;
 import javax.json.Json;
 import javax.json.JsonArray;
@@ -22,7 +29,28 @@ public class ProductListBean {
     
    private List <Product> productList;
 
-    public ProductListBean() {
+    public ProductListBean(){
+        
+        try (Connection conn = Credentials.getConnection()) {
+            
+            PreparedStatement pstmt = conn.prepareStatement("SELECT * FROM product");
+            
+            ResultSet rs = pstmt.executeQuery();
+            
+            while (rs.next()) {
+                Product product = new Product();
+                 product.setProductId(rs.getInt("productId"));
+                 product.setProductName(rs.getString("name"));
+                 product.setDescription(rs.getString("description"));
+                 product.setQty(rs.getInt("quantity"));
+                 
+                 productList.add(product);
+            }
+            
+        }  catch (SQLException ex) {
+            Logger.getLogger(ProductListBean.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
     }
    
 public void add(Product product){  
