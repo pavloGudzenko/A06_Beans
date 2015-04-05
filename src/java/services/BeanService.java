@@ -17,7 +17,5 @@ public class BeanService {
     
     @EJB
     ProductListBean productList;
-    
-    
-    
+        
 }
