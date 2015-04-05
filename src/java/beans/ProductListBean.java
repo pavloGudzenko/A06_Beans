@@ -54,7 +54,7 @@ public class ProductListBean {
     }
    
 public void add(Product product){ 
-      int rowsInserted = 0;
+      int rowsInserted;
       
       rowsInserted = doUpdate("INSERT INTO product (productid, name, description, quantity) VALUES (?, ?, ?, ?)", 
               Integer.toString(product.getProductId()), 
@@ -71,7 +71,7 @@ public void add(Product product){
 
 
 public void remove(Product product){ 
-    int rowsDeleted = 0;
+    int rowsDeleted;
       
       rowsDeleted = doUpdate("DELETE FROM product WHERE productid = ? AND name = ? AND description = ? AND quantity = ?", 
                              Integer.toString(product.getProductId()),
@@ -100,7 +100,21 @@ public void remove(int id){
 }
 
 public void set(int id, Product product){
-    productList.set(id, product);
+           int rowsUpdated;
+      
+      rowsUpdated = doUpdate("UPDATE product SET name = ?, description =?, quantity = ? WHERE productId = ?", 
+                             product.getProductName(),
+                             product.getDescription(),
+                             Integer.toString(product.getQty()),
+                             Integer.toString(product.getProductId()));
+    
+            if (rowsUpdated == 0){
+               System.out.println("No rows were Updated");
+           } else {
+                productList.set(id, product);
+            }
+    
+    
 }
 
 public Product get(int id){
